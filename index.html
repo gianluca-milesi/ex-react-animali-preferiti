@@ -21,7 +21,7 @@
             const [animals, setAnimals] = useState([])
 
             function addAnimal() {
-                const randomAnimal = animalsChoices[Math.floor(Math.random() * animalsChoices.length)]
+                const randomAnimal = animalsChoices.pop([Math.floor(Math.random() * animalsChoices.length)])
                 setAnimals(prevAnimals => [...prevAnimals, randomAnimal])
             }
 
