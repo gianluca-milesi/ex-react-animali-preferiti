@@ -14,32 +14,59 @@
         const { createRoot } = ReactDOM
         const { useState } = React
 
-        const animalsChoices = ["Cane", "Gatto", "Pappagallo", "Cavallo", "Panda"]
 
-        function Modal({ title, content, show = false, onClose = () => { } }) {
+        function Modal({ show = false, setShow = () => { }, addAnimal = () => { } }) {
+
+            const [inputValue, setInputValue] = useState("")
+
+            function handleInput(event) {
+                setInputValue(event.target.value)
+                console.log(event.target.value)
+            }
+
+            function onConfirm() {
+                addAnimal(inputValue)
+                onClose()
+            }
+
+            function onClose() {
+                setInputValue("")
+                setShow(false)
+            }
+
             return show && ReactDOM.createPortal(
                 <div className="modal-container">
                     <div className="modal">
-                        <h2>{title}</h2>
-                        <p>{content}</p>
-                        <button onClick={onClose}>Annulla</button>
+                        <h2>Aggiungi un nuovo animale</h2>
+                        <input
+                            type="text"
+                            value={inputValue}
+                            onChange={handleInput}
+                            placeholder="Inserisci un animale..."
+                        />
+                        <div class="modal-buttons">
+                            <button onClick={onConfirm}>Conferma</button>
+                            <button onClick={onClose}>Annulla</button>
+                        </div>
                     </div>
                 </div>,
                 document.body
             )
         }
 
+
+
         function AnimalsList() {
             const [animals, setAnimals] = useState([])
+            const [show, setShow] = useState(false)
 
-            function addAnimal() {
-                const randomAnimal = animalsChoices.pop([Math.floor(Math.random() * animalsChoices.length)])
-                setAnimals(prevAnimals => [...prevAnimals, randomAnimal])
+            function addAnimal(newAnimal) {
+                setAnimals(prevAnimals => [...prevAnimals, newAnimal])
             }
 
             return (
                 <>
-                    <button onClick={addAnimal}>Aggiungi animale</button>
+                    <button onClick={() => setShow(true)}>Aggiungi animale</button>
                     <details>
                         <summary>Animali</summary>
                         <ul>
@@ -48,6 +75,8 @@
                             ))}
                         </ul>
                     </details>
+
+                    <Modal show={show} setShow={setShow} addAnimal={addAnimal} />
                 </>
             )
         }
