@@ -35,14 +35,41 @@
         function AnimalsList() {
             const [animals, setAnimals] = useState([])
             const [show, setShow] = useState(false)
-            const [inputValue, setInputValue] = useState("")
+            const [animalName, setAnimalName] = useState("")
+            const [isLoading, setIsLoading] = useState(false)
+            const [errorMessage, setErrorMessage] = useState("")
 
 
-            function addAnimal(newAnimal) {
-                if (!inputValue) return
-                setAnimals(curr => [...curr, inputValue])
-                setInputValue("")
-                setShow(false)
+            async function addAnimal(newAnimal) {
+                if (!animalName.trim()) return
+
+                setIsLoading(true)
+                setErrorMessage("")
+
+                try {
+                    const response = await fetch(`https://boolean-spec-frontend.vercel.app/freetestapi/animals?search=${animalName}`)
+                    const [animalData] = await response.json()
+
+                    if (!animalData) {
+                        throw new Error("Nessun animale trovato")
+                    }
+                    console.log(animalData)
+
+                    const animal = {
+                        name: animalData.name || null,
+                        description: animalData.description || null,
+                        image: animalData.image || null
+                    }
+                    setAnimals(curr => [...curr, animal])
+                } catch (err) {
+                    console.error(err)
+                    const message = err.message === "Nessun animale trovato" ? "Nessun animale trovato" : "Errore durante la ricerca dell'animale"
+                    setErrorMessage(message)
+                } finally {
+                    setIsLoading(false)
+                    setAnimalName("")
+                    setShow(false)
+                }
             }
 
             return (
@@ -50,11 +77,23 @@
                     <button onClick={() => setShow(true)}>Aggiungi animale</button>
                     <details>
                         <summary>Animali</summary>
-                        <ul>
+                        {isLoading && <div>Caricamento...</div>}
+                        {errorMessage && <p>{errorMessage}</p>}
+                        <div>
                             {animals.map((animal, i) => (
-                                <li key={i}>{animal}</li>
+                                <div key={i} className="card">
+                                    {animal.image &&
+                                        <figure>
+                                            <img src={animal.image} />
+                                        </figure>
+                                    }
+                                    <div className="card-body">
+                                        <h3>{animal.name}</h3>
+                                        <p>{animal.description}</p>
+                                    </div>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     </details>
 
                     <Modal
@@ -65,8 +104,8 @@
                             <input
                                 type="text"
                                 placeholder="inserisci un animale..."
-                                value={inputValue}
-                                onChange={(e) => { setInputValue(e.target.value) }}
+                                value={animalName}
+                                onChange={(e) => { setAnimalName(e.target.value) }}
                             />
                         }
                     />
